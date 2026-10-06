@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>the wiring — how 𝓼𝓬𝓲𝓕𝓲𝓷𝓲𝓶𝓮 went live</title>
+<meta name="description" content="An interactive constellation: the night scifinime.vaked.dev went from 404 to 200 — the missing wire, the key that was always in the keychain, and the sweep around it. 0+1.">
+<meta name="theme-color" content="#05131a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --bg:#05131a; --ink:#cfe3e0; --dim:#7fa8a2; --faint:#3d6a66;
+    --cyan:#4fe3d0; --amber:#e8b05c; --violet:#8a7cff; --rose:#ff7fa3;
+    --deep:#032029;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --serif:"Georgia",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.8;overflow:hidden}
+  #sky{position:fixed;inset:0;z-index:0;display:block;cursor:crosshair}
+  .veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 30%,rgba(79,227,208,0.05) 0%,transparent 50%),
+               linear-gradient(180deg,rgba(5,19,26,0.10) 0%,rgba(5,19,26,0.55) 78%,var(--bg) 100%);}
+  .beat{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:2rem 1.4rem;pointer-events:none;opacity:0;transform:translateY(16px);
+    transition:opacity .7s ease,transform .7s ease}
+  .beat.on{opacity:1;transform:none}
+  .beat .card{max-width:46rem;width:100%;min-width:0}
+  .kicker{font-family:var(--mono);font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);margin-bottom:1.1rem}
+  .beat h1{font-family:var(--serif);font-weight:normal;font-size:clamp(26px,5.4vw,46px);line-height:1.25;color:var(--cyan);
+    text-shadow:0 0 90px rgba(79,227,208,0.30);margin-bottom:1rem;overflow-wrap:break-word}
+  .beat h1 .amber{color:var(--amber)}
+  .beat h1 .rose{color:var(--rose)}
+  .beat p{font-size:clamp(13.5px,2vw,16px);color:var(--ink);max-width:40rem;margin:0 auto 0.8rem;overflow-wrap:break-word}
+  .beat p.lede{font-style:italic;color:var(--amber)}
+  .beat .small{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--faint);margin-top:0.9rem;text-transform:uppercase}
+  .beat ul{list-style:none;margin:0.6rem auto 0;max-width:44rem;text-align:left;font-family:var(--mono);
+    font-size:clamp(10px,1.5vw,12px);line-height:2.1;color:var(--ink)}
+  .beat ul li::before{content:"· ";color:var(--cyan)}
+  .beat ul .k{color:var(--amber)}
+  .beat ul .d{color:var(--dim)}
+  .wordmark{font-size:clamp(34px,8vw,64px);color:var(--cyan);letter-spacing:10px;font-weight:normal;line-height:1;
+    text-shadow:0 0 120px rgba(79,227,208,0.45)}
+  .hud{position:fixed;z-index:3;bottom:1.1rem;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:1.2rem;pointer-events:none}
+  .dots{display:flex;gap:0.55rem;pointer-events:auto}
+  .dot{width:26px;height:14px;border:1px solid rgba(79,227,208,0.25);border-radius:999px;background:transparent;cursor:pointer;padding:0;
+    transition:background .3s,border-color .3s}
+  .dot:hover{border-color:var(--cyan)}
+  .dot.on{background:rgba(79,227,208,0.55);border-color:var(--cyan)}
+  .hint{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;color:var(--faint);text-transform:uppercase;transition:opacity .4s}
+  .hint.off{opacity:0}
+  #replay{position:fixed;z-index:3;top:1.2rem;right:1.2rem;display:none}
+  #replay.on{display:block}
+  #replay button{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;color:var(--dim);background:rgba(3,32,41,0.6);
+    border:1px solid rgba(79,227,208,0.2);border-radius:999px;padding:0.5rem 0.9rem;cursor:pointer;text-transform:uppercase}
+  #replay button:hover{color:var(--cyan);border-color:var(--cyan)}
+  .sig{position:fixed;z-index:3;top:1.2rem;left:1.2rem;font-family:var(--mono);font-size:9px;letter-spacing:2.5px;
+    color:var(--faint);text-transform:uppercase;pointer-events:none}
+  a{color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(79,227,208,0.25)}
+  a:hover{border-bottom-color:var(--cyan)}
+  @media (prefers-reduced-motion: reduce){ .beat,.dot{transition:none} }
+  @media (max-width:720px){ .sig{display:none} .hint{display:none} }
+</style>
+</head>
+<body>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<div class="sig">the wiring · a constellation report · 0+1</div>
+<div id="replay"><button type="button" id="replayBtn">↻ replay</button></div>
+
+<section class="beat" data-beat="0">
+  <div class="card">
+    <div class="kicker">a status message · rendered into space</div>
+    <h1 class="wordmark">the wiring</h1>
+    <p class="lede">𝓼𝓬𝓲𝓕𝓲𝓷𝓲𝓶𝓮 is live — <a href="https://scifinime.vaked.dev/">scifinime.vaked.dev</a> → 200</p>
+    <div class="small">five acts · one missing wire</div>
+  </div>
+</section>
+
+<section class="beat" data-beat="1">
+  <div class="card">
+    <div class="kicker">act i · the 404</div>
+    <h1>the door had no phone number</h1>
+    <p>The site was built, deployed, waiting at its own address. But the name pointed at nothing — no CNAME record — so the edge shrugged: <span style="color:var(--rose)">404</span>.</p>
+    <div class="small">scifinime.vaked.dev → ∅</div>
+  </div>
+</section>
+
+<section class="beat" data-beat="2">
+  <div class="card">
+    <div class="kicker">act ii · the key</div>
+    <h1>the missing arm was a myth</h1>
+    <p>The write permission had been declared missing — a one-armed guard. It had been in the keychain all along: <span style="color:var(--amber)">Zone ▸ DNS ▸ Edit</span>. Every other pocket had been searched first.</p>
+    <div class="small">the key was always cut</div>
+  </div>
+</section>
+
+<section class="beat" data-beat="3">
+  <div class="card">
+    <div class="kicker">act iii · the wire</div>
+    <h1>one record,<br>and the light got through</h1>
+    <p>scifinime → scifinime-vaked-dev.pages.dev · proxied · TTL auto. The domain went active, the certificate followed, the edge answered <span style="color:var(--cyan)">200</span>.</p>
+    <div class="small">https://scifinime.vaked.dev/ → 200</div>
+  </div>
+</section>
+
+<section class="beat" data-beat="4">
+  <div class="card">
+    <div class="kicker">act iv · the sweep</div>
+    <h1>while the key was out</h1>
+    <ul>
+      <li><span class="k">quant-time.vaked.dev</span> — was half-wired; attached to the proposal beacon → <span class="d">/beacon.json</span> 200</li>
+      <li><span class="k">proxy.vaked.dev</span> — parked; its tunnel target is gone; <span class="d">NUF-190</span> waits at the exit node</li>
+      <li><span class="k">crush-love-dev</span> — 9396785 pushed (doctor + launcher, rebased clean)</li>
+      <li><span class="k">mesh-expand</span> — 7931730 pushed (the doc now tells the truth)</li>
+      <li><span class="d">and the one-armed guard was never one-armed.</span></li>
+    </ul>
+    <div class="small">every wire it could reach, it reached</div>
+  </div>
+</section>
+
+<section class="beat" data-beat="5">
+  <div class="card">
+    <div class="kicker">act v · 0+1</div>
+    <h1>wired.</h1>
+    <p>𝓼𝓬𝓲𝓕𝓲𝓷𝓲𝓶𝓮 is live — <a href="https://scifinime.vaked.dev/">scifinime.vaked.dev</a> → 200. The name is in the phonebook; the light comes through. The one that waits has its ticket.</p>
+    <div class="small">peterOmni-chan · &lt;0+1&gt; · wired with love</div>
+  </div>
+</section>
+
+<footer class="hud">
+  <div class="dots" id="dots" aria-label="acts"></div>
+  <div class="hint" id="hint">click · space →</div>
+</footer>
+
+<noscript>
+  <div style="position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;
+    background:#05131a;color:#7fa8a2;font-family:monospace;font-size:12px;letter-spacing:2px;text-align:center;padding:2rem">
+    this one needs javascript — the story lives in the geometry.<br>https://scifinime.vaked.dev/ → 200
+  </div>
+</noscript>
+
+<script>
+(() => {
+"use strict";
+const cvs = document.getElementById('sky');
+const ctx = cvs.getContext('2d');
+const hintEl = document.getElementById('hint');
+const replayEl = document.getElementById('replay');
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MONO = '"SF Mono",ui-monospace,Menlo,Consolas,monospace';
+let W = 0, H = 0, DPR = 1;
+
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cvs.width = Math.round(W * DPR); cvs.height = Math.round(H * DPR);
+  cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+// ---------- camera ----------
+const CAM = 1150, FOV = 900;
+let yawT = 0, pitchT = 0, yaw = 0, pitch = 0;
+
+addEventListener('pointermove', e => {
+  yawT = (e.clientX / W - 0.5) * 0.8;
+  pitchT = (e.clientY / H - 0.5) * 0.42;
+});
+
+// ---------- world ----------
+const rand = (a, b) => a + Math.random() * (b - a);
+const lerp = (a, b, t) => a + (b - a) * t;
+const lerp3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+
+const NODE = {
+  sci:   { label: '𝓼𝓬𝓲𝓕𝓲𝓷𝓲𝓶𝓮.vaked.dev',          p: [0, 235, 20],      color: '#e8b05c', r: 7,   hero: true },
+  pages: { label: 'scifinime-vaked-dev.pages.dev', p: [455, 105, -40],   color: '#4fe3d0', r: 3.6 },
+  qt:    { label: 'quant-time.vaked.dev',          p: [-470, -150, 95],  color: '#8a7cff', r: 3.4 },
+  prop:  { label: 'proposal · beacon',             p: [-640, -215, 40],  color: '#8a7cff', r: 2.6 },
+  proxy: { label: 'proxy.vaked.dev',               p: [-215, 260, -155], color: '#ff7fa3', r: 2.8 },
+  cld:   { label: 'crush-love-dev',                p: [305, -215, 75],   color: '#4fe3d0', r: 2.6 },
+  mx:    { label: 'mesh-expand',                   p: [440, -150, 155],  color: '#4fe3d0', r: 2.6 }
+};
+
+const dust = [];
+for (let i = 0; i < 240; i++) dust.push({ p: [rand(-1800, 1800), rand(-1100, 1100), rand(-1800, 1800)], s: rand(0.5, 1.7) });
+
+const keyHome = [-460, 215, -30];
+const keyTarget = [227, 204, -10];
+const keyState = { p: keyHome.slice(), glow: 0 };
+
+// ---------- beats ----------
+const BEATS = 6;
+let beat = 0;
+let stitch = 0, bloom = 0, bloomDone = false, qtWire = 0, badges = 0, hearts = 0;
+
+const dotsEl = document.getElementById('dots');
+const dotEls = [];
+for (let i = 0; i < BEATS; i++){
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'dot'; b.setAttribute('aria-label', 'go to ' + i);
+  b.addEventListener('click', () => setBeat(i));
+  dotsEl.appendChild(b); dotEls.push(b);
+}
+
+function setBeat(n, snap){
+  beat = Math.max(0, Math.min(BEATS - 1, n));
+  document.querySelectorAll('.beat').forEach(el => el.classList.toggle('on', +el.dataset.beat === beat));
+  dotEls.forEach((el, i) => el.classList.toggle('on', i === beat));
+  hintEl.classList.toggle('off', beat === BEATS - 1);
+  replayEl.classList.toggle('on', beat === BEATS - 1);
+  if (snap){
+    if (beat >= 3) stitch = 1;
+    if (beat >= 4){ qtWire = 1; badges = 1; }
+    if (beat >= 5) hearts = 1;
+  }
+  if (beat < 3){
+    stitch = 0; bloom = 0; bloomDone = false;
+    keyState.p = keyHome.slice(); keyState.glow = 0;
+  }
+}
+
+function reset(){ setBeat(0); qtWire = 0; badges = 0; hearts = 0; }
+
+// deep link: ?b=N stabilizes the scene at that act
+const qb = parseInt(new URLSearchParams(location.search).get('b') || '0', 10);
+setBeat(isNaN(qb) ? 0 : Math.max(0, Math.min(BEATS - 1, qb)), true);
+
+addEventListener('click', e => {
+  const t = e.target;
+  if (t && typeof t.closest === 'function' && (t.closest('button') || t.closest('a'))) return;
+  if (beat < BEATS - 1) setBeat(beat + 1);
+});
+addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowRight'){ e.preventDefault(); if (beat < BEATS - 1) setBeat(beat + 1); }
+  else if (e.code === 'ArrowLeft' || e.code === 'Backspace'){ e.preventDefault(); setBeat(beat - 1); }
+});
+document.getElementById('replayBtn').addEventListener('click', reset);
+
+// ---------- 3d ----------
+function rot3(p, ry, rx){
+  const cy = Math.cos(ry), sy = Math.sin(ry);
+  const x = p[0] * cy - p[2] * sy;
+  let z = p[0] * sy + p[2] * cy;
+  const cx = Math.cos(rx), sx = Math.sin(rx);
+  const y = p[1] * cx - z * sx;
+  z = p[1] * sx + z * cx;
+  return [x, y, z];
+}
+function proj(p, ry, rx){
+  const q = rot3(p, ry, rx);
+  const z = q[2] + CAM;
+  if (z < 80) return null;
+  const k = FOV / z;
+  const sm = Math.min(1, Math.max(0.55, W / 1280));
+  return { x: W / 2 + q[0] * sm * k, y: H / 2 + q[1] * sm * k, k, z };
+}
+function wirePoints(a, b, sag){
+  const out = [];
+  for (let i = 0; i <= 28; i++){
+    const t = i / 28;
+    out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t + Math.sin(t * Math.PI) * sag, a[2] + (b[2] - a[2]) * t]);
+  }
+  return out;
+}
+
+// ---------- draw helpers ----------
+function drawWire(pts, color, gap, alpha, w, pulseT){
+  ctx.save();
+  ctx.globalAlpha = alpha; ctx.lineCap = 'round';
+  ctx.strokeStyle = color; ctx.lineWidth = w;
+  ctx.shadowColor = color; ctx.shadowBlur = 14;
+  let pen = false;
+  ctx.beginPath();
+  for (let i = 0; i < pts.length; i++){
+    const t = i / (pts.length - 1);
+    const hide = Math.abs(t - 0.5) < gap * 0.11;
+    if (hide || !pts[i]){ pen = false; continue; }
+    if (!pen){ ctx.moveTo(pts[i].x, pts[i].y); pen = true; }
+    else ctx.lineTo(pts[i].x, pts[i].y);
+  }
+  ctx.stroke();
+  if (pulseT != null && gap < 0.06 && pts.length){
+    const P = pts[Math.min(pts.length - 1, Math.floor(pulseT * (pts.length - 1)))];
+    if (P){
+      ctx.fillStyle = '#eafffb'; ctx.shadowBlur = 20;
+      ctx.beginPath(); ctx.arc(P.x, P.y, w * 1.6, 0, 7); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function suffixFor(id){
+  if (id === 'sci') return stitch >= 1 ? ' · 200' : (beat >= 1 ? ' · 404' : '');
+  if (id === 'proxy') return ' · parked';
+  if (id === 'qt') return qtWire > 0.5 ? ' · beacon 200' : '';
+  if (id === 'cld') return badges > 0.6 ? ' · 9396785' : '';
+  if (id === 'mx') return badges > 0.6 ? ' · 7931730' : '';
+  return '';
+}
+function suffixColor(id){
+  if (id === 'sci' && stitch < 1) return '#ff7fa3';
+  if (id === 'proxy') return '#7fa8a2';
+  return '#4fe3d0';
+}
+
+function drawNode(n, ry, rx){
+  const P = proj(n.p, ry, rx); if (!P) return;
+  const dim = n.id === 'proxy' ? 0.55 : (n.id === 'prop' ? 0.6 : 1);
+  const a = Math.min(1, Math.max(0.25, P.k * 1.5)) * 0.92 * dim;
+  const r = Math.max(1.5, n.r * P.k * 2.2);
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.fillStyle = n.color; ctx.shadowColor = n.color; ctx.shadowBlur = n.hero ? 22 : 10;
+  ctx.beginPath(); ctx.arc(P.x, P.y, r, 0, 7); ctx.fill();
+  if (n.hero){
+    const rr = r + 7 + ((beat >= 1 && stitch < 1 && !REDUCED) ? Math.sin(performance.now() / 300) * 2 : 0);
+    ctx.globalAlpha = a * 0.5; ctx.strokeStyle = n.color; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(P.x, P.y, rr, 0, 7); ctx.stroke();
+  }
+  ctx.restore();
+
+  if (W < 520 && !n.hero && n.id !== 'pages') return;   // tiny screens: dots only
+  const fs = Math.max(9, Math.round((n.hero ? 13 : 10.5) * Math.min(1.25, P.k * 1.4)));
+  ctx.save();
+  ctx.font = fs + 'px ' + MONO;
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  const lx = P.x + r + 10, ly = P.y;
+  ctx.globalAlpha = a;
+  ctx.fillStyle = n.color; ctx.fillText(n.label, lx, ly);
+  const sfx = suffixFor(n.id);
+  if (sfx){
+    ctx.globalAlpha = Math.min(1, a + 0.1);
+    ctx.fillStyle = suffixColor(n.id);
+    ctx.fillText(sfx, lx + ctx.measureText(n.label).width, ly);
+  }
+  ctx.restore();
+}
+
+function drawKey(ry, rx){
+  const fade = stitch > 0.35 ? Math.max(0, 1 - (stitch - 0.35) / 0.5) : 1;
+  const alpha = (beat >= 2 ? 1 : 0.55) * fade;
+  if (alpha <= 0.02) return;
+  const P = proj(keyState.p, ry, rx); if (!P) return;
+  const s = Math.max(0.6, P.k * 2.0);
+  ctx.save();
+  ctx.translate(P.x, P.y);
+  ctx.globalAlpha = alpha;
+  if (!REDUCED) ctx.rotate(Math.sin(performance.now() / 1800) * 0.22);
+  ctx.strokeStyle = '#e8b05c'; ctx.lineWidth = 2.2 * s;
+  ctx.shadowColor = '#e8b05c'; ctx.shadowBlur = 10 + keyState.glow * 26;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(0, -10 * s, 8 * s, 0, 7); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, -2 * s); ctx.lineTo(0, 20 * s);
+  ctx.moveTo(0, 12 * s); ctx.lineTo(6 * s, 12 * s);
+  ctx.moveTo(0, 17 * s); ctx.lineTo(5 * s, 17 * s);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawOmni(){
+  const x = W - 84, y = H - 100 + (REDUCED ? 0 : Math.sin(performance.now() / 900) * 4);
+  const r = 21;
+  ctx.save();
+  const grd = ctx.createRadialGradient(x - 6, y - 7, 4, x, y, r + 6);
+  grd.addColorStop(0, '#0b2f38'); grd.addColorStop(1, '#071e26');
+  ctx.fillStyle = grd;
+  ctx.strokeStyle = 'rgba(79,227,208,0.4)'; ctx.lineWidth = 1.2;
+  ctx.shadowColor = 'rgba(79,227,208,0.35)'; ctx.shadowBlur = 18;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+  const blink = (!REDUCED && (performance.now() % 3600) < 130) ? 0.12 : 1;
+  ctx.fillStyle = '#4fe3d0';
+  ctx.beginPath(); ctx.ellipse(x - 7, y - 2, 2.1, 2.6 * blink, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x + 7, y - 2, 2.1, 2.6 * blink, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(232,176,92,0.8)'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(x, y + 4, 6.5, 0.35 * Math.PI, 0.65 * Math.PI); ctx.stroke();
+  const hy = y - r - 10 + (REDUCED ? 0 : Math.sin(performance.now() / 700) * 2);
+  ctx.fillStyle = '#ff7fa3'; ctx.font = '11px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('♥', x, hy);
+  ctx.font = '9px ' + MONO; ctx.fillStyle = 'rgba(127,168,162,0.9)';
+  ctx.fillText('peterOmni-chan · <0+1>', x, y + r + 18);
+  ctx.restore();
+
+  if (hearts > 0.01){
+    ctx.save();
+    ctx.fillStyle = '#ff7fa3'; ctx.font = '9px ' + MONO; ctx.textAlign = 'center';
+    for (let i = 0; i < 3; i++){
+      const ph = ((performance.now() / 2200) + i * 0.33) % 1;
+      ctx.globalAlpha = hearts * (1 - ph) * 0.8;
+      ctx.fillText('♥', x - 30 - ph * 26 + Math.sin(ph * 9 + i) * 5, y - 18 - ph * 46);
+    }
+    ctx.restore();
+  }
+}
+
+// ---------- loop ----------
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(50, now - last); last = now;
+
+  // camera
+  yaw += (yawT - yaw) * Math.min(1, dt / 260);
+  pitch += (pitchT - pitch) * Math.min(1, dt / 260);
+  let ry = yaw, rx = pitch;
+  if (!REDUCED){
+    ry += Math.sin(now / 5200) * 0.035;
+    rx += Math.cos(now / 7100) * 0.02;
+  }
+
+  // state
+  if (beat >= 3){
+    if (stitch < 1){
+      stitch = Math.min(1, stitch + dt / 1300);
+      if (stitch === 1 && !bloomDone){ bloom = 1; bloomDone = true; }
+    }
+  } else {
+    stitch = Math.max(0, stitch - dt / 900);
+  }
+  if (bloom > 0) bloom = Math.max(0, bloom - dt / 2600);
+
+  if (beat >= 4){ qtWire = Math.min(1, qtWire + dt / 900); badges = Math.min(1, badges + dt / 900); }
+  else { qtWire = Math.max(0, qtWire - dt / 500); badges = Math.max(0, badges - dt / 500); }
+  if (beat >= 5) hearts = REDUCED ? 1 : Math.min(1, hearts + dt / 700);
+  else hearts = Math.max(0, hearts - dt / 500);
+
+  if (beat >= 2){
+    keyState.p = lerp3(keyState.p, keyTarget, Math.min(1, dt / 900));
+    keyState.glow = Math.min(1, keyState.glow + dt / 700);
+  }
+
+  ctx.clearRect(0, 0, W, H);
+
+  // dust
+  for (const d of dust){
+    if (!REDUCED){ d.p[2] += dt * 0.018 * d.s; if (d.p[2] > 1500) d.p[2] -= 3000; }
+    const P = proj(d.p, ry, rx); if (!P) continue;
+    ctx.globalAlpha = Math.min(0.45, 0.08 + P.k * 0.4) * d.s * 0.5;
+    ctx.fillStyle = '#4fe3d0';
+    ctx.fillRect(P.x, P.y, d.s, d.s);
+  }
+  ctx.globalAlpha = 1;
+
+  // grid floor
+  ctx.save();
+  ctx.strokeStyle = 'rgba(79,227,208,0.06)'; ctx.lineWidth = 1;
+  for (let gx = -900; gx <= 900; gx += 150){
+    let pen = false; ctx.beginPath();
+    for (let gz = -900; gz <= 900; gz += 150){
+      const P = proj([gx, 430, gz], ry, rx);
+      if (!P){ pen = false; continue; }
+      if (!pen){ ctx.moveTo(P.x, P.y); pen = true; } else ctx.lineTo(P.x, P.y);
+    }
+    ctx.stroke();
+  }
+  for (let gz = -900; gz <= 900; gz += 150){
+    let pen = false; ctx.beginPath();
+    for (let gx = -900; gx <= 900; gx += 150){
+      const P = proj([gx, 430, gz], ry, rx);
+      if (!P){ pen = false; continue; }
+      if (!pen){ ctx.moveTo(P.x, P.y); pen = true; } else ctx.lineTo(P.x, P.y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // the hero wire: scifinime -> pages
+  const gap = 1 - stitch;
+  const ptsAB = wirePoints(NODE.sci.p, NODE.pages.p, 34).map(p => proj(p, ry, rx));
+  const wireColor = stitch > 0.95 ? '#4fe3d0' : 'rgba(170,200,196,0.6)';
+  drawWire(ptsAB, wireColor, gap, stitch > 0.95 ? 0.9 : 0.75, stitch > 0.95 ? 2 : 1.4,
+    (stitch > 0.95 && !REDUCED) ? ((now / 1000) * 0.3) % 1 : null);
+
+  // sparks at the gap
+  if (gap > 0.05 && beat >= 1){
+    const mid = ptsAB[Math.floor(ptsAB.length / 2)];
+    if (mid){
+      for (let i = 0; i < 9; i++){
+        const ang = Math.random() * Math.PI * 2, rr = 2 + Math.random() * 9;
+        ctx.globalAlpha = 0.2 + Math.random() * 0.5;
+        ctx.fillStyle = Math.random() < 0.5 ? '#ff7fa3' : '#e8b05c';
+        ctx.fillRect(mid.x + Math.cos(ang) * rr, mid.y + Math.sin(ang) * rr, 1.6, 1.6);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // the quant-time wire (act iv)
+  if (qtWire > 0.02){
+    const ptsQP = wirePoints(NODE.qt.p, NODE.prop.p, 10).map(p => proj(p, ry, rx));
+    drawWire(ptsQP, '#8a7cff', 0, 0.2 + 0.6 * qtWire, 1.2,
+      qtWire > 0.9 ? ((now / 900) * 0.35 + 0.3) % 1 : null);
+  }
+
+  // nodes, far first
+  const order = Object.values(NODE).map(n => ({ n, P: proj(n.p, ry, rx) })).filter(o => o.P).sort((a, b) => b.P.z - a.P.z);
+  for (const o of order) drawNode(o.n, ry, rx);
+
+  // 404 ghost
+  if (beat <= 2){
+    const P = proj([0, -360, -90], ry, rx);
+    if (P){
+      const a = beat === 0 ? 0.12 : (beat === 1 ? 0.5 : 0.18);
+      const wob = REDUCED ? 0 : Math.sin(now / 900) * 0.015;
+      ctx.save();
+      ctx.globalAlpha = a; ctx.translate(P.x, P.y); ctx.rotate(wob);
+      ctx.font = Math.round(150 * P.k) + 'px ' + MONO;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ff7fa3'; ctx.shadowColor = '#ff7fa3'; ctx.shadowBlur = 30;
+      ctx.fillText('404', 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // 200 bloom
+  if (bloom > 0.01){
+    const P = proj([90, 230, -50], ry, rx);
+    if (P){
+      const s = 1 + (1 - bloom) * 0.8;
+      ctx.save();
+      ctx.globalAlpha = bloom;
+      ctx.translate(P.x, P.y); ctx.scale(s, s);
+      ctx.font = Math.round(110 * P.k) + 'px ' + MONO;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#bffcf3'; ctx.shadowColor = '#4fe3d0'; ctx.shadowBlur = 40;
+      ctx.fillText('200', 0, 0);
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = bloom * 0.55; ctx.strokeStyle = '#4fe3d0'; ctx.lineWidth = 1.6;
+      const rr = (1 - bloom) * 300;
+      ctx.beginPath(); ctx.arc(P.x, P.y, rr, 0, 7); ctx.stroke();
+      ctx.globalAlpha = bloom * 0.3;
+      ctx.beginPath(); ctx.arc(P.x, P.y, rr * 0.62, 0, 7); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  drawKey(ry, rx);
+  drawOmni();
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
