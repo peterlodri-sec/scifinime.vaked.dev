@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#05131a"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M-20 430 C 150 360, 300 500, 460 430 S 760 350, 940 430 S 1180 500, 1240 430" stroke="#4fe3d0" stroke-opacity="0.18" stroke-width="2"/>
+    <path d="M-20 460 C 170 520, 350 380, 520 450 S 820 520, 1000 440 S 1180 380, 1240 450" stroke="#e8b05c" stroke-opacity="0.16" stroke-width="2"/>
+    <path d="M-20 300 C 220 260, 420 340, 620 300 S 980 250, 1240 305" stroke="#8a7cff" stroke-opacity="0.10" stroke-width="1.5"/>
+  </g>
+  <circle cx="890" cy="205" r="78" fill="url(#glow)"/>
+  <defs>
+    <radialGradient id="glow">
+      <stop offset="0%" stop-color="#e8b05c" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#e8b05c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <text x="600" y="240" text-anchor="middle" font-family="Menlo,monospace" font-size="34" fill="#4fe3d0" letter-spacing="16">∿ ◍ ∿</text>
+  <text x="600" y="330" text-anchor="middle" font-family="Georgia,serif" font-size="64" fill="#7ff0e2" letter-spacing="10">𝓼𝓬𝓲𝓕𝓲𝓷𝓲𝓶𝓮</text>
+  <text x="600" y="385" text-anchor="middle" font-family="Menlo,monospace" font-size="17" fill="#7fa8a2" letter-spacing="6">ONE MAN, END TO END · BOOKS · MANGA · ANIME · SHORT ANIMATION</text>
+  <text x="600" y="470" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="24" fill="#e8b05c">The shell was the body. The sandbox is the mind that builds one.</text>
+  <text x="600" y="565" text-anchor="middle" font-family="Menlo,monospace" font-size="14" fill="#3d6a66" letter-spacing="4">HEALING IS THE ULTIMATE ROOT PRIVILEGE · SCIFINIME.VAKED.DEV</text>
+</svg>

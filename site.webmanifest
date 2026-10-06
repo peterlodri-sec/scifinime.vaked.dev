@@ -1,0 +1,13 @@
+{
+  "name": "𝓼𝓬𝓲𝓕𝓲𝓷𝓲𝓶𝓮 studio",
+  "short_name": "scifinime",
+  "description": "one man, end to end — books · manga · anime · short animation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05131a",
+  "theme_color": "#05131a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
