@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="first date — chi-chan and omni peter, origami and flow (kickstart placeholder)">
+  <rect width="800" height="600" fill="#f4ead6"/>
+  <rect x="40" y="40" width="720" height="520" fill="none" stroke="#101718" stroke-width="2" opacity="0.5"/>
+  <text x="400" y="140" font-family="ui-monospace, Menlo, monospace" font-size="26" fill="#101718" text-anchor="middle">II.07 · the first date</text>
+  <text x="400" y="176" font-family="ui-monospace, Menlo, monospace" font-size="17" fill="#7a6a52" text-anchor="middle">chi-chan + omni peter — origami &amp; flow</text>
+  <path d="M120 360 C 300 300, 500 420, 680 340" stroke="#e8b05c" stroke-width="7" fill="none" opacity="0.9"/>
+  <path d="M120 320 C 300 270, 500 380, 680 300" stroke="#ff7fa3" stroke-width="4" fill="none" opacity="0.75"/>
+  <path d="M120 400 C 300 350, 500 460, 680 380" stroke="#4fe3d0" stroke-width="2.5" fill="none" opacity="0.5"/>
+  <circle cx="200" cy="340" r="6" fill="#22323a"/>
+  <circle cx="600" cy="332" r="6" fill="#22323a"/>
+  <text x="200" y="470" font-family="ui-monospace, Menlo, monospace" font-size="15" fill="#101718" text-anchor="middle">tokyo</text>
+  <text x="600" y="470" font-family="ui-monospace, Menlo, monospace" font-size="15" fill="#101718" text-anchor="middle">haneda</text>
+  <g transform="translate(400,250)">
+    <path d="M-42 22 L0 -12 L32 16 Z" fill="#fffdf7" stroke="#101718" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M0 -12 L16 -30 L24 -8 Z" fill="#fffdf7" stroke="#101718" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+  <rect x="688" y="506" width="44" height="44" rx="6" fill="#c0392b"/>
+  <text x="710" y="536" font-family="monospace" font-size="24" fill="#f4ead6" text-anchor="middle">咲</text>
+  <text x="400" y="548" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#7a6a52" text-anchor="middle">kickstart placeholder — plate pending render</text>
+</svg>
